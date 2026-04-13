@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Huntd Lens</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <div class="popup-header">
+        <p class="popup-eyebrow">Huntd Lens</p>
+        <h1 class="popup-title">Settings</h1>
+      </div>
+
+      <label class="field">
+        <span class="field-label">API Key</span>
+        <input id="apiKey" class="field-input" type="password" placeholder="Enter your Huntd API key" autocomplete="off" />
+      </label>
+
+      <label class="field">
+        <span class="field-label">Backend URL</span>
+        <input id="backendUrl" class="field-input" type="url" placeholder="http://localhost:3002" />
+      </label>
+
+      <label class="toggle-row" for="enabled">
+        <span class="toggle-row-label">Extension enabled</span>
+        <span class="toggle">
+          <input id="enabled" type="checkbox" />
+          <span class="toggle-slider"></span>
+        </span>
+      </label>
+
+      <button id="saveButton" class="save-button" type="button">Save settings</button>
+      <p id="statusText" class="status-text"></p>
+      <a class="help-link" href="https://gethuntd.com" target="_blank" rel="noreferrer">Get your API key at gethuntd.com →</a>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

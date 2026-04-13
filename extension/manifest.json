@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Huntd Lens",
+  "version": "1.0.0",
+  "description": "Overlay competitor intelligence on LinkedIn profiles powered by Huntd.",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": ["https://www.linkedin.com/*"],
+  "background": { "service_worker": "background/background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/in/*", "https://www.linkedin.com/company/*"],
+      "js": ["content/content.js"],
+      "css": ["content/sidebar.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/sidebar.js",
+        "utils/scorer.js",
+        "utils/templates.js"
+      ],
+      "matches": ["https://www.linkedin.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
