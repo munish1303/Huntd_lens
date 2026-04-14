@@ -1,14 +1,17 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
     apiKey: '',
-    backendUrl: 'http://localhost:3001',
-    enabled: true
+    backendUrl: 'http://localhost:3002',
+    enabled: true,
+    geminiApiKey: ''
   });
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   (async () => {
     try {
+
+      // ── Fetch profile data from backend ───────────────────────────────────
       if (message.type === 'FETCH_PROFILE_DATA') {
         const { apiKey, backendUrl } = await chrome.storage.local.get(['apiKey', 'backendUrl']);
 
@@ -23,10 +26,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         try {
           const response = await fetch(`${backendUrl}/api/profile`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': apiKey
-            },
+            headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
             body: JSON.stringify({
               linkedinUrl: message.payload.linkedinUrl,
               profileData: message.payload.profileData
@@ -35,31 +35,51 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           });
 
           let responseJson = {};
-          try {
-            responseJson = await response.json();
-          } catch (_error) {
-            responseJson = {};
-          }
+          try { responseJson = await response.json(); } catch (_e) {}
 
           if (!response.ok) {
-            sendResponse({
-              error: 'API_ERROR',
-              status: response.status,
-              message: responseJson.error || 'Backend request failed'
-            });
+            sendResponse({ error: 'API_ERROR', status: response.status, message: responseJson.error || 'Backend request failed' });
             return;
           }
-
           sendResponse({ success: true, data: responseJson });
         } catch (error) {
-          sendResponse({
-            error: 'NETWORK_ERROR',
-            message: error.message
-          });
+          sendResponse({ error: 'NETWORK_ERROR', message: error.message });
         } finally {
           clearTimeout(timeoutId);
         }
+        return;
+      }
 
+      // ── AI analysis via backend (Gemini key lives in backend .env) ──────────
+      if (message.type === 'AI_ANALYSE') {
+        const { apiKey, backendUrl } = await chrome.storage.local.get(['apiKey', 'backendUrl']);
+
+        if (!apiKey) {
+          sendResponse({ error: 'NO_API_KEY' });
+          return;
+        }
+
+        const { profileData, deepProfile, icpScore } = message.payload;
+
+        try {
+          const res = await fetch(`${backendUrl}/api/ai-analyse`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+            body: JSON.stringify({ profileData, deepProfile, icpScore })
+          });
+
+          let json = {};
+          try { json = await res.json(); } catch (_e) {}
+
+          if (!res.ok) {
+            sendResponse({ error: json.error || 'AI_ERROR', message: json.message || `Backend returned ${res.status}` });
+            return;
+          }
+
+          sendResponse(json);
+        } catch (error) {
+          sendResponse({ error: 'NETWORK_ERROR', message: error.message });
+        }
         return;
       }
 
@@ -67,7 +87,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         const settings = await chrome.storage.local.get(['apiKey', 'backendUrl', 'enabled']);
         sendResponse({
           apiKey: settings.apiKey || '',
-          backendUrl: settings.backendUrl || 'http://localhost:3001',
+          backendUrl: settings.backendUrl || 'http://localhost:3002',
           enabled: settings.enabled !== false
         });
         return;
@@ -89,7 +109,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           sendResponse({ success: true });
           return;
         }
-
         sendResponse({ success: false });
         return;
       }

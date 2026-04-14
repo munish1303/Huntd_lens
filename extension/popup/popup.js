@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const settings = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
   apiKeyInput.value = settings.apiKey || '';
-  backendUrlInput.value = settings.backendUrl || 'http://localhost:3001';
+  backendUrlInput.value = settings.backendUrl || 'http://localhost:3002';
   enabledInput.checked = settings.enabled !== false;
 
   saveButton.addEventListener('click', async () => {
@@ -27,8 +27,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     statusText.textContent = 'Settings saved!';
-    setTimeout(() => {
-      statusText.textContent = '';
-    }, 2000);
+    setTimeout(() => { statusText.textContent = ''; }, 2000);
   });
 });
